@@ -2,11 +2,22 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import json
+import time
 from pprint import pprint
+
+
+
 
 NUMBER_OF_COLUMNS_TO_SCRAPE = 1 #MAX four only.
 WEBSITE = 'https://www.shabdkosh.com'
-headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36'}
+OUTPUT_FILE = 'shabdkosh_exp_output.json'
+
+headers = {
+           'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
+           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
+           'Accept-Encoding': 'gzip, deflate, br',
+           'Cache-Control': 'max-age=0'}
+
 
 r = requests.get('https://www.shabdkosh.com/browse/english-hindi/S', headers=headers)
 c=r.content
@@ -31,26 +42,24 @@ for word_index, word_column in enumerate(word_columns):
 meanings_dict = {}
 
 for word, link in words.items():
-    #print(word, link)
+    print(word, link)
 
     req = requests.get(link, headers=headers)
     con = req.content
-
+    time.sleep(0.3)
     meanings = list()
     soup_meaning = BeautifulSoup(con, 'html.parser')
-    meaning_ol_list = soup_meaning.find_all('ol', {'class':'wnol'})
+    meaning_ol_list = soup_meaning.find_all('ol', {'class': 'eirol'})
 
     for meaning_ol in meaning_ol_list:
-        meanings.extend([li.get_text(strip=True) for li in meaning_ol.find_all('li')])
-
+        li_tags = meaning_ol.find_all('li')
+        meanings.extend([li_tag.find('a').get_text(strip=True) for li_tag in li_tags])
     meanings_dict.update({word: meanings})
 
+pprint(meanings_dict)
 
-
-#pprint(meanings_dict)
-
-
-
-with open('shabdkosh.json', 'w') as f:
+with open(OUTPUT_FILE, 'w', encoding='utf-16') as f:
     json.dump(meanings_dict, f)
+
+
 
