@@ -58,7 +58,7 @@ for word, link in words.items():
 
 pprint(meanings_dict)
 
-with open(OUTPUT_FILE, 'w', encoding='utf-16') as f:
+with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
     json.dump(meanings_dict, f)
 
 
